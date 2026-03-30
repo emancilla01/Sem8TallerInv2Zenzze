@@ -2,11 +2,11 @@
     class="navbar navbar-expand-sm navbar-dark bg-primary"
    >
     <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url('/dashboard') }}">
-        <img src="{{ asset('logo.png') }}" alt="Logo" style="height:56px;" />        
+        <img src="" alt="Logo" style="height:56px;" />        
     </a>
     
-    <div class="collapse navbar-collapse" id="collapsibleNavId">
-        <ul class="navbar-nav me-auto mt-2 mt-lg-0">
+    <div class="navbar-collapse d-flex flex-wrap align-items-center">
+        <ul class="navbar-nav flex-row flex-wrap align-items-center gap-2 me-auto mt-2 mt-lg-0">
             <li class="nav-item">
                 <a class="nav-link active" href="{{ url('/categorias') }}" aria-current="page"
                     >Categorias <span class="visually-hidden">(current)</span></a
@@ -53,16 +53,16 @@
                 >
             </li>
             <li class="nav-item">
-                <a class="nav-link active" href="{{ route('salidas.index') }}" aria-current="page"
+                <a class="nav-link active" href="{{ url('/salidas') }}" aria-current="page"
                     >Salidas <span class="visually-hidden">(current)</span></a
                 >
             </li>
             <li class="nav-item">
-                <a class="nav-link active" href="{{ route('ecm_equcommob.index') }}" aria-current="page"
+                <a class="nav-link active" href="{{ url('/ecm-inventario') }}" aria-current="page"
                     >ECM - Inventario <span class="visually-hidden">(current)</span></a
                 >
             </li>
-            <li class="nav-item dropdown">
+            {{-- <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="consultasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Consultas al inventario
                 </a>
@@ -75,8 +75,8 @@
                     <li><a class="dropdown-item" href="{{ route('consultas.grupos_software') }}">Por Grupos que solicitaron el Software</a></li>
                     <li><a class="dropdown-item" href="{{ route('consultas.carreras_software') }}">Por Carreras que solicitaron el Software</a></li>
                 </ul>
-            </li>
-            <li class="nav-item">
+            </li> --}}
+            {{-- <li class="nav-item">
                 <a class="nav-link active" href="{{ url('/consultas-vue') }}" aria-current="page"
                     >Consultas con VUE API‑Rest <span class="visually-hidden">(current)</span></a
                 >
@@ -85,7 +85,7 @@
                 <a class="nav-link active" href="logout" aria-current="page"
                     >Logout <span class="visually-hidden">(current)</span></a
                 >
-            </li>
+            </li> --}}
             
         </ul>
         {{-- <form class="d-flex my-2 my-lg-0">
