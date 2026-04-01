@@ -8,7 +8,7 @@ Route::get('/', function () {
 
 Route::redirect('/dashboard', '/')->name('dashboard');
 
-Route::view('/categorias', 'placeholder', ['titulo' => 'Categorias'])->name('categorias');
+Route::view('/categorias', 'placeholder', ['titulo' => 'Agregar llegada'])->name('categorias');
 Route::view('/personal', 'placeholder', ['titulo' => 'Personal'])->name('personal');
 Route::view('/periodos', 'placeholder', ['titulo' => 'Periodos'])->name('periodos');
 Route::view('/carreras', 'placeholder', ['titulo' => 'Carreras'])->name('carreras');

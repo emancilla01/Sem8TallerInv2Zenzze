@@ -9,7 +9,7 @@
         <ul class="navbar-nav flex-row flex-wrap align-items-center gap-2 me-auto mt-2 mt-lg-0">
             <li class="nav-item">
                 <a class="nav-link active" href="{{ url('/categorias') }}" aria-current="page"
-                    >Categorias <span class="visually-hidden">(current)</span></a
+                    >Agregar llegada <span class="visually-hidden">(current)</span></a
                 >
             </li>
             <li class="nav-item">
@@ -62,6 +62,8 @@
                     >ECM - Inventario <span class="visually-hidden">(current)</span></a
                 >
             </li>
+
+
             {{-- <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="consultasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Consultas al inventario
