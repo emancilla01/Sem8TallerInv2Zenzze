@@ -1,36 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>@yield('title', 'Hotel Check-In')</title>
     @vite(['resources/js/app.ts'])
     {{-- <link rel="stylesheet" href="{{ asset('css/photo-thumb.css') }}"> --}}
 </head>
 <body>
-    <div class="row">
-            <div class="col">
-                @yield('menu')
-            </div>
-        </div>
-    <div class="container" style="padding-bottom:80px;">
-                
-        <div class="row">
-            <div class="col">
-                @yield('contenido')
-            </div>
-        </div>
+    <div class="d-flex flex-column min-vh-100 arrivals-shell">
+        @hasSection('menu')
+            @yield('menu')
+        @endif
 
-        @auth
-            <nav class="navbar fixed-bottom navbar-dark bg-primary">
-                <div class="container-fluid justify-content-center">
-                    <span class="navbar-text text-center w-100">
-                        {{ auth()->user()->name }}<br>
-                        {{ auth()->user()->email }}
-                    </span>
-                </div>
-            </nav>
-        @endauth
+        <main class="container my-4 flex-grow-1 arrivals-main">
+            @yield('contenido')
+        </main>
+
+        <footer class="border-top py-3 mt-auto arrivals-footer">
+            <div class="container text-center small">
+                @yield('footer_text', 'Sistema de documentos de check-in del hotel')
+            </div>
+        </footer>
     </div>
 </body>
 </html>

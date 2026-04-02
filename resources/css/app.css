@@ -9,3 +9,130 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+:root {
+    --arrivals-bg: #f4efe6;
+    --arrivals-surface: #fffaf2;
+    --arrivals-surface-soft: #efe4d2;
+    --arrivals-border: #d8cbb7;
+    --arrivals-text: #20343b;
+    --arrivals-muted: #6a7b80;
+    --arrivals-primary: #2f5d50;
+    --arrivals-primary-hover: #24493f;
+    --arrivals-secondary: #6b7280;
+    --arrivals-warning: #b7791f;
+    --arrivals-warning-hover: #975f18;
+    --arrivals-danger: #a64141;
+    --arrivals-danger-hover: #8a3434;
+    --arrivals-success: #2f7a54;
+}
+
+.arrivals-shell {
+    background-color: var(--arrivals-bg);
+    color: var(--arrivals-text);
+}
+
+.arrivals-navbar {
+    background-color: var(--arrivals-primary) !important;
+    box-shadow: 0 0.5rem 1rem rgba(32, 52, 59, 0.08);
+}
+
+.arrivals-navbar .navbar-brand,
+.arrivals-navbar .nav-link {
+    color: rgba(255, 250, 242, 0.88);
+}
+
+.arrivals-navbar .nav-link:hover,
+.arrivals-navbar .nav-link:focus,
+.arrivals-navbar .nav-link.active {
+    color: #fffaf2;
+}
+
+.arrivals-main .card,
+.arrivals-card {
+    background-color: var(--arrivals-surface);
+    border-color: var(--arrivals-border) !important;
+}
+
+.arrivals-main .shadow-sm,
+.arrivals-card.shadow-sm {
+    box-shadow: 0 0.5rem 1rem rgba(32, 52, 59, 0.05) !important;
+}
+
+.arrivals-main .text-muted,
+.arrivals-footer {
+    color: var(--arrivals-muted) !important;
+}
+
+.arrivals-table thead th {
+    background-color: var(--arrivals-surface-soft) !important;
+    color: var(--arrivals-text);
+    border-bottom-color: var(--arrivals-border);
+}
+
+.arrivals-table tbody td {
+    border-color: rgba(216, 203, 183, 0.7);
+}
+
+.arrivals-shell .form-control {
+    border-color: var(--arrivals-border);
+}
+
+.arrivals-shell .form-control:focus {
+    border-color: rgba(47, 93, 80, 0.45);
+    box-shadow: 0 0 0 0.25rem rgba(47, 93, 80, 0.15);
+}
+
+.arrivals-shell .btn-primary {
+    background-color: var(--arrivals-primary);
+    border-color: var(--arrivals-primary);
+}
+
+.arrivals-shell .btn-primary:hover,
+.arrivals-shell .btn-primary:focus {
+    background-color: var(--arrivals-primary-hover);
+    border-color: var(--arrivals-primary-hover);
+}
+
+.arrivals-shell .btn-secondary {
+    background-color: var(--arrivals-secondary);
+    border-color: var(--arrivals-secondary);
+}
+
+.arrivals-shell .btn-warning {
+    background-color: var(--arrivals-warning);
+    border-color: var(--arrivals-warning);
+    color: #fff;
+}
+
+.arrivals-shell .btn-warning:hover,
+.arrivals-shell .btn-warning:focus {
+    background-color: var(--arrivals-warning-hover);
+    border-color: var(--arrivals-warning-hover);
+    color: #fff;
+}
+
+.arrivals-shell .btn-danger {
+    background-color: var(--arrivals-danger);
+    border-color: var(--arrivals-danger);
+}
+
+.arrivals-shell .btn-danger:hover,
+.arrivals-shell .btn-danger:focus {
+    background-color: var(--arrivals-danger-hover);
+    border-color: var(--arrivals-danger-hover);
+}
+
+.arrivals-shell .text-bg-success {
+    background-color: var(--arrivals-success) !important;
+}
+
+.arrivals-shell .text-bg-warning {
+    background-color: #d8a24a !important;
+    color: #fff !important;
+}
+
+.arrivals-footer {
+    background-color: var(--arrivals-surface) !important;
+    border-top-color: var(--arrivals-border) !important;
+}
