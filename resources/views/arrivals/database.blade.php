@@ -1,6 +1,6 @@
 @extends('plantillas.inicio')
 
-@section('title', 'Llegadas')
+@section('title', 'Base de datos')
 
 @section('menu')
     @include('menu-arrivals')
@@ -10,37 +10,34 @@
     @php
         $nombreDirection = $sort === 'nombre' && $direction === 'asc' ? 'desc' : 'asc';
         $apellidoDirection = $sort === 'apellido' && $direction === 'asc' ? 'desc' : 'asc';
-        $nombreIndicator = $sort === 'nombre'
-            ? ($direction === 'asc' ? '↑' : '↓')
-            : '';
-        $apellidoIndicator = $sort === 'apellido'
-            ? ($direction === 'asc' ? '↑' : '↓')
-            : '';
+        $fechaLlegadaDirection = $sort === 'fecha_llegada' && $direction === 'asc' ? 'desc' : 'asc';
+        $nombreIndicator = $sort === 'nombre' ? ($direction === 'asc' ? '↑' : '↓') : '';
+        $apellidoIndicator = $sort === 'apellido' ? ($direction === 'asc' ? '↑' : '↓') : '';
+        $fechaLlegadaIndicator = $sort === 'fecha_llegada' ? ($direction === 'asc' ? '↑' : '↓') : '';
     @endphp
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <h1 class="h2 mb-1">Llegadas</h1>
-            <p class="text-muted mb-0">Gestiona las llegadas actuales y los documentos</p>
+            <h1 class="h2 mb-1">Base de datos</h1>
+            <p class="text-muted mb-0">Consulta y administra el historial de expedientes</p>
         </div>
-        <a href="{{ route('arrivals.create') }}" class="btn btn-primary">Nueva llegada</a>
     </div>
 
     <div class="card arrivals-card shadow-sm mb-4">
         <div class="card-body">
-            <form action="{{ route('home') }}" method="get" role="search">
+            <form action="{{ route('database.index') }}" method="get" role="search">
                 @if ($sort)
                     <input type="hidden" name="sort" value="{{ $sort }}">
                     <input type="hidden" name="direction" value="{{ $direction }}">
                 @endif
 
-                <label for="guest-search" class="form-label">Buscar por nombre o apellido del huésped</label>
+                <label for="archive-search" class="form-label">Buscar por nombre o apellido del huésped</label>
                 <input
                     type="search"
                     class="form-control"
-                    id="guest-search"
+                    id="archive-search"
                     name="search"
-                    placeholder="Ingrese el nombre del huésped"
+                    placeholder="Ingrese el nombre o apellido del huésped"
                     value="{{ request('search') }}"
                     autocomplete="off"
                 >
@@ -56,7 +53,7 @@
                         <tr>
                             <th scope="col">
                                 <a
-                                    href="{{ route('home', array_filter(['search' => request('search'), 'sort' => 'nombre', 'direction' => $nombreDirection])) }}"
+                                    href="{{ route('database.index', array_filter(['search' => request('search'), 'sort' => 'nombre', 'direction' => $nombreDirection])) }}"
                                     class="link-body-emphasis text-decoration-none d-inline-flex align-items-center gap-1"
                                 >
                                     <span>Nombre</span>
@@ -67,7 +64,7 @@
                             </th>
                             <th scope="col">
                                 <a
-                                    href="{{ route('home', array_filter(['search' => request('search'), 'sort' => 'apellido', 'direction' => $apellidoDirection])) }}"
+                                    href="{{ route('database.index', array_filter(['search' => request('search'), 'sort' => 'apellido', 'direction' => $apellidoDirection])) }}"
                                     class="link-body-emphasis text-decoration-none d-inline-flex align-items-center gap-1"
                                 >
                                     <span>Apellido</span>
@@ -76,7 +73,17 @@
                                     @endif
                                 </a>
                             </th>
-                            <th scope="col">Fecha de llegada</th>
+                            <th scope="col">
+                                <a
+                                    href="{{ route('database.index', array_filter(['search' => request('search'), 'sort' => 'fecha_llegada', 'direction' => $fechaLlegadaDirection])) }}"
+                                    class="link-body-emphasis text-decoration-none d-inline-flex align-items-center gap-1"
+                                >
+                                    <span>Fecha de llegada</span>
+                                    @if ($fechaLlegadaIndicator)
+                                        <span aria-hidden="true">{{ $fechaLlegadaIndicator }}</span>
+                                    @endif
+                                </a>
+                            </th>
                             <th scope="col">Estado del documento</th>
                             <th scope="col">Estado de la identificación</th>
                             <th scope="col" class="text-end">Acciones</th>
@@ -111,17 +118,6 @@
                                                 Más
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ route('expedientes.edit', $expediente->id) }}">
-                                                        {{ filled($expediente->documento_path) ? 'Reemplazar documento' : 'Subir documento' }}
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ route('expedientes.edit', $expediente->id) }}">
-                                                        {{ filled($expediente->identificacion_path) ? 'Reemplazar ID' : 'Subir ID' }}
-                                                    </a>
-                                                </li>
-                                                <li><hr class="dropdown-divider"></li>
                                                 <li><a class="dropdown-item" href="{{ route('expedientes.edit', $expediente->id) }}">Editar</a></li>
                                                 <li>
                                                     <form action="{{ route('expedientes.destroy', $expediente->id) }}" method="post" onsubmit="return confirm('¿Estás seguro de eliminar este registro?')">
@@ -139,7 +135,7 @@
                         @empty
                             <tr>
                                 <td colspan="6" class="text-center py-4 text-muted">
-                                    No hay llegadas registradas hoy.
+                                    No hay expedientes registrados.
                                 </td>
                             </tr>
                         @endforelse

@@ -26,6 +26,7 @@
             <form action="{{ route('expedientes.destroy', $expediente->id) }}" method="post" onsubmit="return confirm('¿Estás seguro de eliminar este registro?')">
                 @csrf
                 @method('DELETE')
+                <input type="hidden" name="redirect_to" value="{{ route('database.index') }}">
                 <button type="submit" class="btn btn-danger">Eliminar</button>
             </form>
         </div>

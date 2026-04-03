@@ -38,9 +38,43 @@ class ArrivalController extends Controller
                 $query->orderBy('apellido')->orderBy('nombre');
             });
 
-        $expedientes = $query->get();
+        $expedientes = $query->paginate(10)->withQueryString();
 
         return view('contenido', compact('expedientes', 'sort', 'direction'));
+    }
+
+    public function database(Request $request)
+    {
+        $search = trim((string) $request->input('search'));
+        $sort = $request->input('sort');
+        $direction = $request->input('direction', 'desc');
+        $allowedSorts = ['nombre', 'apellido', 'fecha_llegada'];
+
+        if (! in_array($direction, ['asc', 'desc'], true)) {
+            $direction = 'desc';
+        }
+
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = null;
+        }
+
+        $query = Expediente::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($subquery) use ($search) {
+                    $subquery
+                        ->where('nombre', 'like', "%{$search}%")
+                        ->orWhere('apellido', 'like', "%{$search}%");
+                });
+            })
+            ->when($sort !== null, function ($query) use ($sort, $direction) {
+                $query->orderBy($sort, $direction);
+            }, function ($query) {
+                $query->orderByDesc('fecha_llegada')->orderBy('apellido')->orderBy('nombre');
+            });
+
+        $expedientes = $query->paginate(10)->withQueryString();
+
+        return view('arrivals.database', compact('expedientes', 'sort', 'direction'));
     }
 
     public function create()
@@ -121,7 +155,7 @@ class ArrivalController extends Controller
             ->with('success', 'Expediente actualizado correctamente');
     }
 
-    public function destroy(int $id)
+    public function destroy(Request $request, int $id)
     {
         $expediente = Expediente::findOrFail($id);
 
@@ -134,6 +168,14 @@ class ArrivalController extends Controller
         }
 
         $expediente->delete();
+
+        $redirectTo = $request->input('redirect_to');
+
+        if (is_string($redirectTo) && str_starts_with($redirectTo, config('app.url'))) {
+            return redirect()
+                ->to($redirectTo)
+                ->with('success', 'Expediente eliminado correctamente');
+        }
 
         return redirect()
             ->route('home')

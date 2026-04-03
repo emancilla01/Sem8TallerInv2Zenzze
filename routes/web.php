@@ -4,6 +4,7 @@ use App\Http\Controllers\ArrivalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ArrivalController::class, 'index'])->name('home');
+Route::get('/base-de-datos', [ArrivalController::class, 'database'])->name('database.index');
 
 Route::get('/llegadas/nueva', [ArrivalController::class, 'create'])->name('arrivals.create');
 Route::post('/llegadas', [ArrivalController::class, 'store'])->name('arrivals.store');

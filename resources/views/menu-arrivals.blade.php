@@ -6,7 +6,7 @@
                 <a class="nav-link {{ request()->routeIs('home', 'expedientes.show', 'expedientes.edit') ? 'active' : '' }}" aria-current="{{ request()->routeIs('home', 'expedientes.show', 'expedientes.edit') ? 'page' : 'false' }}" href="{{ route('home') }}">Llegadas</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Base de datos</a>
+                <a class="nav-link {{ request()->routeIs('database.index') ? 'active' : '' }}" aria-current="{{ request()->routeIs('database.index') ? 'page' : 'false' }}" href="{{ route('database.index') }}">Base de datos</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('arrivals.create') ? 'active' : '' }}" aria-current="{{ request()->routeIs('arrivals.create') ? 'page' : 'false' }}" href="{{ route('arrivals.create') }}">Nueva llegada</a>
