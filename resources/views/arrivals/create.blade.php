@@ -1,0 +1,86 @@
+@extends('plantillas.inicio')
+
+@section('title', 'Nueva llegada')
+
+@section('menu')
+    @include('menu-arrivals')
+@endsection
+
+@section('contenido')
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h1 class="h2 mb-1">Nueva llegada</h1>
+            <p class="text-muted mb-0">Registra el documento PDF y la identificación del huésped.</p>
+        </div>
+    </div>
+
+    @if ($errors->any())
+        <div class="alert alert-danger" role="alert">
+            <div class="fw-semibold mb-2">No se pudo registrar la llegada.</div>
+            <ul class="mb-0 ps-3">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <div class="card arrivals-card shadow-sm">
+        <div class="card-body p-4">
+            <form action="{{ route('arrivals.store') }}" method="post" enctype="multipart/form-data" class="row g-4">
+                @csrf
+
+                <div class="col-12">
+                    <label for="nombre" class="form-label">Nombre del huésped</label>
+                    <input
+                        type="text"
+                        class="form-control @error('nombre') is-invalid @enderror"
+                        id="nombre"
+                        name="nombre"
+                        value="{{ old('nombre') }}"
+                        maxlength="255"
+                        required
+                    >
+                    @error('nombre')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-12">
+                    <label for="documento" class="form-label">Documento PDF</label>
+                    <input
+                        type="file"
+                        class="form-control @error('documento') is-invalid @enderror"
+                        id="documento"
+                        name="documento"
+                        accept=".pdf,application/pdf"
+                    >
+                    <div class="form-text">Opcional. Sube el PDF combinado del registro y contrato cuando esté disponible.</div>
+                    @error('documento')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-12">
+                    <label for="identificacion" class="form-label">Identificación</label>
+                    <input
+                        type="file"
+                        class="form-control @error('identificacion') is-invalid @enderror"
+                        id="identificacion"
+                        name="identificacion"
+                        accept=".pdf,application/pdf,image/*"
+                    >
+                    <div class="form-text">Opcional. Acepta PDF o imagen del documento de identidad.</div>
+                    @error('identificacion')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-12 d-flex flex-column flex-sm-row justify-content-end gap-2 pt-2">
+                    <a href="{{ route('home') }}" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection

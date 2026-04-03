@@ -1,10 +1,16 @@
 <?php
 
+use App\Http\Controllers\ArrivalController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('contenido');
-}) ->name('home');
+Route::get('/', [ArrivalController::class, 'index'])->name('home');
+
+Route::get('/llegadas/nueva', [ArrivalController::class, 'create'])->name('arrivals.create');
+Route::post('/llegadas', [ArrivalController::class, 'store'])->name('arrivals.store');
+Route::get('/expedientes/{id}', [ArrivalController::class, 'show'])->name('expedientes.show');
+Route::get('/expedientes/{id}/editar', [ArrivalController::class, 'edit'])->name('expedientes.edit');
+Route::put('/expedientes/{id}', [ArrivalController::class, 'update'])->name('expedientes.update');
+Route::delete('/expedientes/{id}', [ArrivalController::class, 'destroy'])->name('expedientes.destroy');
 
 Route::redirect('/dashboard', '/')->name('dashboard');
 

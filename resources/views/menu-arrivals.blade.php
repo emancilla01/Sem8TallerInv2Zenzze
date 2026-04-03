@@ -3,13 +3,13 @@
         <a class="navbar-brand" href="{{ route('home') }}">Hotel Check-In</a>
         <ul class="navbar-nav flex-row flex-wrap gap-2 ms-auto">
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="{{ route('home') }}">Llegadas</a>
+                <a class="nav-link {{ request()->routeIs('home', 'expedientes.show', 'expedientes.edit') ? 'active' : '' }}" aria-current="{{ request()->routeIs('home', 'expedientes.show', 'expedientes.edit') ? 'page' : 'false' }}" href="{{ route('home') }}">Llegadas</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#">Base de datos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Nueva llegada</a>
+                <a class="nav-link {{ request()->routeIs('arrivals.create') ? 'active' : '' }}" aria-current="{{ request()->routeIs('arrivals.create') ? 'page' : 'false' }}" href="{{ route('arrivals.create') }}">Nueva llegada</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#">Cerrar sesión</a>

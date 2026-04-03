@@ -74,6 +74,14 @@
     border-color: rgba(216, 203, 183, 0.7);
 }
 
+.arrivals-table-wrapper {
+    overflow: visible;
+}
+
+.arrivals-table .dropdown-menu {
+    z-index: 1055;
+}
+
 .arrivals-shell .form-control {
     border-color: var(--arrivals-border);
 }
