@@ -11,16 +11,36 @@ class ArrivalController extends Controller
     public function index(Request $request)
     {
         $search = trim((string) $request->input('search'));
+        $sort = $request->input('sort');
+        $direction = $request->input('direction', 'asc');
+        $allowedSorts = ['nombre', 'apellido'];
 
-        $expedientes = Expediente::query()
-            ->whereDate('created_at', now()->toDateString())
+        if (! in_array($direction, ['asc', 'desc'], true)) {
+            $direction = 'asc';
+        }
+
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = null;
+        }
+
+        $query = Expediente::query()
+            ->whereDate('fecha_llegada', now()->toDateString())
             ->when($search !== '', function ($query) use ($search) {
-                $query->where('nombre', 'like', "%{$search}%");
+                $query->where(function ($subquery) use ($search) {
+                    $subquery
+                        ->where('nombre', 'like', "%{$search}%")
+                        ->orWhere('apellido', 'like', "%{$search}%");
+                });
             })
-            ->latest()
-            ->get();
+            ->when($sort !== null, function ($query) use ($sort, $direction) {
+                $query->orderBy($sort, $direction);
+            }, function ($query) {
+                $query->orderBy('apellido')->orderBy('nombre');
+            });
 
-        return view('contenido', compact('expedientes'));
+        $expedientes = $query->get();
+
+        return view('contenido', compact('expedientes', 'sort', 'direction'));
     }
 
     public function create()
@@ -56,6 +76,8 @@ class ArrivalController extends Controller
 
         Expediente::create([
             'nombre' => $validated['nombre'],
+            'apellido' => $validated['apellido'],
+            'fecha_llegada' => $validated['fecha_llegada'],
             'documento_path' => $documentoPath,
             'identificacion_path' => $identificacionPath,
         ]);
@@ -72,6 +94,8 @@ class ArrivalController extends Controller
 
         $data = [
             'nombre' => $validated['nombre'],
+            'apellido' => $validated['apellido'],
+            'fecha_llegada' => $validated['fecha_llegada'],
         ];
 
         if ($request->hasFile('documento')) {
@@ -121,6 +145,8 @@ class ArrivalController extends Controller
         return $request->validate(
             [
                 'nombre' => ['required', 'string', 'max:255'],
+                'apellido' => ['required', 'string', 'max:255'],
+                'fecha_llegada' => ['required', 'date'],
                 'documento' => ['nullable', 'file', 'mimes:pdf'],
                 'identificacion' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp'],
             ],
@@ -128,6 +154,11 @@ class ArrivalController extends Controller
                 'nombre.required' => 'El nombre del huésped es obligatorio.',
                 'nombre.string' => 'El nombre del huésped debe ser un texto válido.',
                 'nombre.max' => 'El nombre del huésped no puede tener más de 255 caracteres.',
+                'apellido.required' => 'El apellido del huésped es obligatorio.',
+                'apellido.string' => 'El apellido del huésped debe ser un texto válido.',
+                'apellido.max' => 'El apellido del huésped no puede tener más de 255 caracteres.',
+                'fecha_llegada.required' => 'La fecha de llegada es obligatoria.',
+                'fecha_llegada.date' => 'La fecha de llegada debe ser una fecha válida.',
                 'documento.file' => 'El documento debe ser un archivo válido.',
                 'documento.mimes' => 'El documento debe estar en formato PDF.',
                 'identificacion.file' => 'La identificación debe ser un archivo válido.',

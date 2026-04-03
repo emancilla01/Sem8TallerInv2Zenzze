@@ -7,6 +7,17 @@
 @endsection
 
 @section('contenido')
+    @php
+        $nombreDirection = $sort === 'nombre' && $direction === 'asc' ? 'desc' : 'asc';
+        $apellidoDirection = $sort === 'apellido' && $direction === 'asc' ? 'desc' : 'asc';
+        $nombreIndicator = $sort === 'nombre'
+            ? ($direction === 'asc' ? '↑' : '↓')
+            : '';
+        $apellidoIndicator = $sort === 'apellido'
+            ? ($direction === 'asc' ? '↑' : '↓')
+            : '';
+    @endphp
+
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <h1 class="h2 mb-1">Llegadas</h1>
@@ -18,7 +29,12 @@
     <div class="card arrivals-card shadow-sm mb-4">
         <div class="card-body">
             <form action="{{ route('home') }}" method="get" role="search">
-                <label for="guest-search" class="form-label">Buscar por nombre del huésped</label>
+                @if ($sort)
+                    <input type="hidden" name="sort" value="{{ $sort }}">
+                    <input type="hidden" name="direction" value="{{ $direction }}">
+                @endif
+
+                <label for="guest-search" class="form-label">Buscar por nombre o apellido del huésped</label>
                 <input
                     type="search"
                     class="form-control"
@@ -38,8 +54,29 @@
                 <table class="table table-striped table-hover mb-0 align-middle arrivals-table">
                     <thead class="table-light">
                         <tr>
-                            <th scope="col">Nombre del huésped</th>
-                            <th scope="col">Fecha</th>
+                            <th scope="col">
+                                <a
+                                    href="{{ route('home', array_filter(['search' => request('search'), 'sort' => 'nombre', 'direction' => $nombreDirection])) }}"
+                                    class="link-body-emphasis text-decoration-none d-inline-flex align-items-center gap-1"
+                                >
+                                    <span>Nombre</span>
+                                    @if ($nombreIndicator)
+                                        <span aria-hidden="true">{{ $nombreIndicator }}</span>
+                                    @endif
+                                </a>
+                            </th>
+                            <th scope="col">
+                                <a
+                                    href="{{ route('home', array_filter(['search' => request('search'), 'sort' => 'apellido', 'direction' => $apellidoDirection])) }}"
+                                    class="link-body-emphasis text-decoration-none d-inline-flex align-items-center gap-1"
+                                >
+                                    <span>Apellido</span>
+                                    @if ($apellidoIndicator)
+                                        <span aria-hidden="true">{{ $apellidoIndicator }}</span>
+                                    @endif
+                                </a>
+                            </th>
+                            <th scope="col">Fecha de llegada</th>
                             <th scope="col">Estado del documento</th>
                             <th scope="col">Estado de la identificación</th>
                             <th scope="col" class="text-end">Acciones</th>
@@ -49,7 +86,8 @@
                         @forelse ($expedientes as $expediente)
                             <tr>
                                 <td>{{ $expediente->nombre }}</td>
-                                <td>{{ $expediente->created_at?->format('d/m/Y') ?? 'Sin fecha' }}</td>
+                                <td>{{ $expediente->apellido }}</td>
+                                <td>{{ optional($expediente->fecha_llegada)->format('d/m/Y') }}</td>
                                 <td>
                                     <span class="badge {{ filled($expediente->documento_path) ? 'text-bg-success' : 'text-bg-warning' }}">
                                         {{ filled($expediente->documento_path) ? 'Subido' : 'Faltante' }}
@@ -86,7 +124,7 @@
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li><a class="dropdown-item" href="{{ route('expedientes.edit', $expediente->id) }}">Editar</a></li>
                                                 <li>
-                                                    <form action="{{ route('expedientes.destroy', $expediente->id) }}" method="post">
+                                                    <form action="{{ route('expedientes.destroy', $expediente->id) }}" method="post" onsubmit="return confirm('¿Estás seguro de eliminar este registro?')">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="dropdown-item text-danger">Eliminar</button>
@@ -99,7 +137,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">
+                                <td colspan="6" class="text-center py-4 text-muted">
                                     No hay llegadas registradas hoy.
                                 </td>
                             </tr>

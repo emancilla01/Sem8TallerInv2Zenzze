@@ -10,7 +10,7 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <h1 class="h2 mb-1">Nueva llegada</h1>
-            <p class="text-muted mb-0">Registra el documento PDF y la identificación del huésped.</p>
+            <p class="text-muted mb-0">Registra los datos operativos y los archivos del huésped.</p>
         </div>
     </div>
 
@@ -31,7 +31,7 @@
                 @csrf
 
                 <div class="col-12">
-                    <label for="nombre" class="form-label">Nombre del huésped</label>
+                    <label for="nombre" class="form-label">Nombre</label>
                     <input
                         type="text"
                         class="form-control @error('nombre') is-invalid @enderror"
@@ -42,6 +42,37 @@
                         required
                     >
                     @error('nombre')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="apellido" class="form-label">Apellido</label>
+                    <input
+                        type="text"
+                        class="form-control @error('apellido') is-invalid @enderror"
+                        id="apellido"
+                        name="apellido"
+                        value="{{ old('apellido') }}"
+                        maxlength="255"
+                        required
+                    >
+                    @error('apellido')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="fecha_llegada" class="form-label">Fecha de llegada</label>
+                    <input
+                        type="date"
+                        class="form-control @error('fecha_llegada') is-invalid @enderror"
+                        id="fecha_llegada"
+                        name="fecha_llegada"
+                        value="{{ old('fecha_llegada', now()->format('Y-m-d')) }}"
+                        required
+                    >
+                    @error('fecha_llegada')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>

@@ -13,7 +13,7 @@
             @yield('menu')
         @endif
 
-        <main class="container my-4 flex-grow-1 arrivals-main">
+        <main class="container my-4 grow arrivals-main">
             @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('success') }}

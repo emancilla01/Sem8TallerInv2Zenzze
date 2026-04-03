@@ -18,12 +18,12 @@
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <h1 class="h2 mb-1">{{ $expediente->nombre }}</h1>
-            <p class="text-muted mb-0">Fecha: {{ $expediente->created_at?->format('d/m/Y') ?? 'Sin fecha' }}</p>
+            <h1 class="h2 mb-1">{{ $expediente->nombre }} {{ $expediente->apellido }}</h1>
+            <p class="text-muted mb-0">Fecha de llegada: {{ optional($expediente->fecha_llegada)->format('d/m/Y') }}</p>
         </div>
         <div class="d-flex flex-wrap gap-2">
             <a href="{{ route('expedientes.edit', $expediente->id) }}" class="btn btn-outline-secondary">Editar</a>
-            <form action="{{ route('expedientes.destroy', $expediente->id) }}" method="post">
+            <form action="{{ route('expedientes.destroy', $expediente->id) }}" method="post" onsubmit="return confirm('¿Estás seguro de eliminar este registro?')">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger">Eliminar</button>
@@ -35,6 +35,21 @@
         <div class="col-12 col-lg-6">
             <div class="card arrivals-card shadow-sm h-100">
                 <div class="card-body d-flex flex-column gap-3">
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6">
+                            <div class="small text-muted">Nombre</div>
+                            <div class="fw-semibold">{{ $expediente->nombre }}</div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="small text-muted">Apellido</div>
+                            <div class="fw-semibold">{{ $expediente->apellido }}</div>
+                        </div>
+                        <div class="col-12">
+                            <div class="small text-muted">Fecha de llegada</div>
+                            <div class="fw-semibold">{{ optional($expediente->fecha_llegada)->format('d/m/Y') }}</div>
+                        </div>
+                    </div>
+
                     <div>
                         <h2 class="h5 mb-1">Documento</h2>
                         <p class="text-muted mb-0">PDF combinado del registro y contrato.</p>
