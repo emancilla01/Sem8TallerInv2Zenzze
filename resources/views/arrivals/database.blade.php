@@ -96,8 +96,8 @@
                                 <td>{{ $expediente->apellido }}</td>
                                 <td>{{ optional($expediente->fecha_llegada)->format('d/m/Y') }}</td>
                                 <td>
-                                    <span class="badge {{ filled($expediente->documento_path) ? 'text-bg-success' : 'text-bg-warning' }}">
-                                        {{ filled($expediente->documento_path) ? 'Subido' : 'Faltante' }}
+                                    <span class="badge {{ $expediente->documentos_count > 0 ? 'text-bg-success' : 'text-bg-warning' }}">
+                                        {{ $expediente->documentos_count > 0 ? 'Subido' : 'Faltante' }}
                                     </span>
                                 </td>
                                 <td>

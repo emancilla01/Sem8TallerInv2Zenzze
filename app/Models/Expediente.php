@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Expediente extends Model
 {
@@ -10,11 +11,15 @@ class Expediente extends Model
         'nombre',
         'apellido',
         'fecha_llegada',
-        'documento_path',
         'identificacion_path',
     ];
 
     protected $casts = [
         'fecha_llegada' => 'date',
     ];
+
+    public function documentos(): HasMany
+    {
+        return $this->hasMany(Documento::class);
+    }
 }

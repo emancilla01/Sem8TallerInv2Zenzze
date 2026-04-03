@@ -89,8 +89,8 @@
                                 <td>{{ $expediente->apellido }}</td>
                                 <td>{{ optional($expediente->fecha_llegada)->format('d/m/Y') }}</td>
                                 <td>
-                                    <span class="badge {{ filled($expediente->documento_path) ? 'text-bg-success' : 'text-bg-warning' }}">
-                                        {{ filled($expediente->documento_path) ? 'Subido' : 'Faltante' }}
+                                    <span class="badge {{ $expediente->documentos_count > 0 ? 'text-bg-success' : 'text-bg-warning' }}">
+                                        {{ $expediente->documentos_count > 0 ? 'Subido' : 'Faltante' }}
                                     </span>
                                 </td>
                                 <td>
@@ -113,7 +113,7 @@
                                             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                                 <li>
                                                     <a class="dropdown-item" href="{{ route('expedientes.edit', $expediente->id) }}">
-                                                        {{ filled($expediente->documento_path) ? 'Reemplazar documento' : 'Subir documento' }}
+                                                        {{ $expediente->documentos_count > 0 ? 'Agregar documento' : 'Subir documento' }}
                                                     </a>
                                                 </li>
                                                 <li>

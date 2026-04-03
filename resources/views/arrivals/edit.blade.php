@@ -88,10 +88,10 @@
                         accept=".pdf,application/pdf"
                     >
                     <div class="form-text">
-                        @if (filled($expediente->documento_path))
-                            Deja este campo vacío para conservar el documento actual.
+                        @if ($expediente->documentos->isNotEmpty())
+                            Sube otro PDF para agregarlo al expediente. Actualmente hay {{ $expediente->documentos->count() }} documento(s).
                         @else
-                            Opcional. Puedes subir el PDF más adelante.
+                            Opcional. Puedes subir el primer PDF más adelante.
                         @endif
                     </div>
                     @error('documento')

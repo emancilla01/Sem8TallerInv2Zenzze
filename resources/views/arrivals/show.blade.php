@@ -8,12 +8,12 @@
 
 @section('contenido')
     @php
-        $documentoUrl = filled($expediente->documento_path) ? asset('storage/' . $expediente->documento_path) : null;
         $identificacionUrl = filled($expediente->identificacion_path) ? asset('storage/' . $expediente->identificacion_path) : null;
         $identificacionExtension = filled($expediente->identificacion_path)
             ? strtolower(pathinfo($expediente->identificacion_path, PATHINFO_EXTENSION))
             : null;
         $identificacionEsImagen = in_array($identificacionExtension, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true);
+        $identificacionEsPdf = $identificacionExtension === 'pdf';
     @endphp
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
@@ -56,11 +56,16 @@
                         <p class="text-muted mb-0">PDF combinado del registro y contrato.</p>
                     </div>
 
-                    @if ($documentoUrl)
-                        <div class="mt-auto">
-                            <a href="{{ $documentoUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-                                Abrir documento
-                            </a>
+                    @if ($expediente->documentos->isNotEmpty())
+                        <div class="d-flex flex-column gap-2 mt-auto">
+                            @foreach ($expediente->documentos as $documento)
+                                <div class="d-flex justify-content-between align-items-center border rounded px-3 py-2">
+                                    <span>Documento {{ $loop->iteration }}</span>
+                                    <a href="{{ asset('storage/' . $documento->path) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
+                                        Abrir
+                                    </a>
+                                </div>
+                            @endforeach
                         </div>
                     @else
                         <p class="text-muted mb-0 mt-auto">Documento pendiente de carga.</p>
@@ -85,7 +90,23 @@
                                 src="{{ $identificacionUrl }}"
                                 alt="Identificación de {{ $expediente->nombre }}"
                                 class="img-fluid rounded border"
+                                style="max-height: 300px;"
                             >
+                        </div>
+
+                        <div>
+                            <a href="{{ $identificacionUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary">
+                                Abrir identificación
+                            </a>
+                        </div>
+                    @elseif ($identificacionEsPdf)
+                        <div>
+                            <iframe
+                                src="{{ $identificacionUrl }}"
+                                title="Identificación de {{ $expediente->nombre }} {{ $expediente->apellido }}"
+                                class="w-100 rounded border"
+                                style="height: 400px;"
+                            ></iframe>
                         </div>
 
                         <div>

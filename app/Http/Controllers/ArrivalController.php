@@ -24,6 +24,7 @@ class ArrivalController extends Controller
         }
 
         $query = Expediente::query()
+            ->withCount('documentos')
             ->whereDate('fecha_llegada', now()->toDateString())
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subquery) use ($search) {
@@ -59,6 +60,7 @@ class ArrivalController extends Controller
         }
 
         $query = Expediente::query()
+            ->withCount('documentos')
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subquery) use ($search) {
                     $subquery
@@ -84,14 +86,14 @@ class ArrivalController extends Controller
 
     public function show(int $id)
     {
-        $expediente = Expediente::findOrFail($id);
+        $expediente = Expediente::with('documentos')->findOrFail($id);
 
         return view('arrivals.show', compact('expediente'));
     }
 
     public function edit(int $id)
     {
-        $expediente = Expediente::findOrFail($id);
+        $expediente = Expediente::with('documentos')->findOrFail($id);
 
         return view('arrivals.edit', compact('expediente'));
     }
@@ -100,21 +102,22 @@ class ArrivalController extends Controller
     {
         $validated = $this->validateExpediente($request);
 
-        $documentoPath = $request->hasFile('documento')
-            ? $request->file('documento')->store('expedientes', 'public')
-            : null;
-
         $identificacionPath = $request->hasFile('identificacion')
             ? $request->file('identificacion')->store('expedientes', 'public')
             : null;
 
-        Expediente::create([
+        $expediente = Expediente::create([
             'nombre' => $validated['nombre'],
             'apellido' => $validated['apellido'],
             'fecha_llegada' => $validated['fecha_llegada'],
-            'documento_path' => $documentoPath,
             'identificacion_path' => $identificacionPath,
         ]);
+
+        if ($request->hasFile('documento')) {
+            $expediente->documentos()->create([
+                'path' => $request->file('documento')->store('expedientes', 'public'),
+            ]);
+        }
 
         return redirect()
             ->route('home')
@@ -133,11 +136,9 @@ class ArrivalController extends Controller
         ];
 
         if ($request->hasFile('documento')) {
-            if (filled($expediente->documento_path)) {
-                Storage::disk('public')->delete($expediente->documento_path);
-            }
-
-            $data['documento_path'] = $request->file('documento')->store('expedientes', 'public');
+            $expediente->documentos()->create([
+                'path' => $request->file('documento')->store('expedientes', 'public'),
+            ]);
         }
 
         if ($request->hasFile('identificacion')) {
@@ -157,10 +158,10 @@ class ArrivalController extends Controller
 
     public function destroy(Request $request, int $id)
     {
-        $expediente = Expediente::findOrFail($id);
+        $expediente = Expediente::with('documentos')->findOrFail($id);
 
-        if (filled($expediente->documento_path)) {
-            Storage::disk('public')->delete($expediente->documento_path);
+        foreach ($expediente->documentos as $documento) {
+            Storage::disk('public')->delete($documento->path);
         }
 
         if (filled($expediente->identificacion_path)) {
