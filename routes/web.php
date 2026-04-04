@@ -1,10 +1,13 @@
 <?php
 
 use App\Http\Controllers\ArrivalController;
+use App\Http\Controllers\PdfExtractionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ArrivalController::class, 'index'])->name('home');
 Route::get('/base-de-datos', [ArrivalController::class, 'database'])->name('database.index');
+Route::get('/pruebas/extraccion-pdf', [PdfExtractionController::class, 'create'])->name('pdf-extraction.create');
+Route::post('/pruebas/extraccion-pdf', [PdfExtractionController::class, 'store'])->name('pdf-extraction.store');
 
 Route::get('/llegadas/nueva', [ArrivalController::class, 'create'])->name('arrivals.create');
 Route::post('/llegadas', [ArrivalController::class, 'store'])->name('arrivals.store');

@@ -120,7 +120,9 @@
 }
 
 .arrivals-upload-box:hover,
-.arrivals-upload-box:focus-within {
+.arrivals-upload-box:focus-within,
+.arrivals-upload-box.is-dragover,
+.arrivals-upload-box.has-file {
     background-color: rgba(239, 228, 210, 0.5);
     border-color: var(--arrivals-primary);
     box-shadow: 0 0 0 0.2rem rgba(47, 93, 80, 0.12);
@@ -132,6 +134,11 @@
 
 .arrivals-upload-title {
     font-weight: 600;
+}
+
+.arrivals-upload-filename {
+    margin-top: 0.75rem;
+    word-break: break-word;
 }
 
 .arrivals-shell .btn-primary {

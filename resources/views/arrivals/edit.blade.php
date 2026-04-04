@@ -87,9 +87,10 @@
                         name="documento"
                         accept=".pdf,application/pdf"
                     >
-                    <label for="documento" class="arrivals-upload-box @error('documento') is-invalid @enderror">
+                    <label for="documento" class="arrivals-upload-box @error('documento') is-invalid @enderror" data-upload-box tabindex="0" role="button">
                         <span class="arrivals-upload-title">Arrastra el archivo aquí</span>
                         <span class="text-muted small">o haz clic para seleccionar</span>
+                        <span class="arrivals-upload-filename text-muted small" data-upload-filename>Ningún archivo seleccionado</span>
                     </label>
                     <div class="form-text">
                         @if ($expediente->documentos->isNotEmpty())
@@ -112,9 +113,10 @@
                         name="identificacion"
                         accept=".pdf,application/pdf,image/*"
                     >
-                    <label for="identificacion" class="arrivals-upload-box @error('identificacion') is-invalid @enderror">
+                    <label for="identificacion" class="arrivals-upload-box @error('identificacion') is-invalid @enderror" data-upload-box tabindex="0" role="button">
                         <span class="arrivals-upload-title">Arrastra el archivo aquí</span>
                         <span class="text-muted small">o haz clic para seleccionar</span>
+                        <span class="arrivals-upload-filename text-muted small" data-upload-filename>Ningún archivo seleccionado</span>
                     </label>
                     <div class="form-text">
                         @if (filled($expediente->identificacion_path))
