@@ -81,11 +81,15 @@
                     <label for="documento" class="form-label">Documento PDF</label>
                     <input
                         type="file"
-                        class="form-control @error('documento') is-invalid @enderror"
+                        class="arrivals-upload-input @error('documento') is-invalid @enderror"
                         id="documento"
                         name="documento"
                         accept=".pdf,application/pdf"
                     >
+                    <label for="documento" class="arrivals-upload-box @error('documento') is-invalid @enderror">
+                        <span class="arrivals-upload-title">Arrastra el archivo aquí</span>
+                        <span class="text-muted small">o haz clic para seleccionar</span>
+                    </label>
                     <div class="form-text">Opcional. Sube el PDF combinado del registro y contrato cuando esté disponible.</div>
                     @error('documento')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -96,11 +100,15 @@
                     <label for="identificacion" class="form-label">Identificación</label>
                     <input
                         type="file"
-                        class="form-control @error('identificacion') is-invalid @enderror"
+                        class="arrivals-upload-input @error('identificacion') is-invalid @enderror"
                         id="identificacion"
                         name="identificacion"
                         accept=".pdf,application/pdf,image/*"
                     >
+                    <label for="identificacion" class="arrivals-upload-box @error('identificacion') is-invalid @enderror">
+                        <span class="arrivals-upload-title">Arrastra el archivo aquí</span>
+                        <span class="text-muted small">o haz clic para seleccionar</span>
+                    </label>
                     <div class="form-text">Opcional. Acepta PDF o imagen del documento de identidad.</div>
                     @error('identificacion')
                         <div class="invalid-feedback">{{ $message }}</div>

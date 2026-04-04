@@ -91,6 +91,49 @@
     box-shadow: 0 0 0 0.25rem rgba(47, 93, 80, 0.15);
 }
 
+.arrivals-upload-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.arrivals-upload-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 120px;
+    padding: 1.5rem;
+    text-align: center;
+    background-color: rgba(239, 228, 210, 0.35);
+    border: 1px dashed var(--arrivals-border);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.arrivals-upload-box:hover,
+.arrivals-upload-box:focus-within {
+    background-color: rgba(239, 228, 210, 0.5);
+    border-color: var(--arrivals-primary);
+    box-shadow: 0 0 0 0.2rem rgba(47, 93, 80, 0.12);
+}
+
+.arrivals-upload-box.is-invalid {
+    border-color: var(--bs-danger);
+}
+
+.arrivals-upload-title {
+    font-weight: 600;
+}
+
 .arrivals-shell .btn-primary {
     background-color: var(--arrivals-primary);
     border-color: var(--arrivals-primary);

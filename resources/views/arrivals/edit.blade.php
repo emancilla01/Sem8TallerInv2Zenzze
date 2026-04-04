@@ -82,11 +82,15 @@
                     <label for="documento" class="form-label">Documento PDF</label>
                     <input
                         type="file"
-                        class="form-control @error('documento') is-invalid @enderror"
+                        class="arrivals-upload-input @error('documento') is-invalid @enderror"
                         id="documento"
                         name="documento"
                         accept=".pdf,application/pdf"
                     >
+                    <label for="documento" class="arrivals-upload-box @error('documento') is-invalid @enderror">
+                        <span class="arrivals-upload-title">Arrastra el archivo aquí</span>
+                        <span class="text-muted small">o haz clic para seleccionar</span>
+                    </label>
                     <div class="form-text">
                         @if ($expediente->documentos->isNotEmpty())
                             Sube otro PDF para agregarlo al expediente. Actualmente hay {{ $expediente->documentos->count() }} documento(s).
@@ -103,11 +107,15 @@
                     <label for="identificacion" class="form-label">Identificación</label>
                     <input
                         type="file"
-                        class="form-control @error('identificacion') is-invalid @enderror"
+                        class="arrivals-upload-input @error('identificacion') is-invalid @enderror"
                         id="identificacion"
                         name="identificacion"
                         accept=".pdf,application/pdf,image/*"
                     >
+                    <label for="identificacion" class="arrivals-upload-box @error('identificacion') is-invalid @enderror">
+                        <span class="arrivals-upload-title">Arrastra el archivo aquí</span>
+                        <span class="text-muted small">o haz clic para seleccionar</span>
+                    </label>
                     <div class="form-text">
                         @if (filled($expediente->identificacion_path))
                             Deja este campo vacío para conservar la identificación actual.
