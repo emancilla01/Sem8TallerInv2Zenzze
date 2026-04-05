@@ -60,7 +60,7 @@
                         <div class="d-flex flex-column gap-2 mt-auto">
                             @foreach ($expediente->documentos as $documento)
                                 <div class="d-flex justify-content-between align-items-center border rounded px-3 py-2">
-                                    <span>Documento {{ $loop->iteration }}</span>
+                                    <span>{{ $documento->original_name ?: basename($documento->path) }}</span>
                                     <a href="{{ asset('storage/' . $documento->path) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
                                         Abrir
                                     </a>

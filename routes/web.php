@@ -10,6 +10,7 @@ Route::get('/pruebas/ocr-register-card', [RegisterCardOcrController::class, 'cre
 Route::post('/pruebas/ocr-register-card', [RegisterCardOcrController::class, 'store'])->name('register-card-ocr.store');
 
 Route::get('/llegadas/nueva', [ArrivalController::class, 'create'])->name('arrivals.create');
+Route::post('/llegadas/nueva/ocr', [ArrivalController::class, 'prefillFromOcr'])->name('arrivals.prefill-ocr');
 Route::post('/llegadas', [ArrivalController::class, 'store'])->name('arrivals.store');
 Route::get('/expedientes/{id}', [ArrivalController::class, 'show'])->name('expedientes.show');
 Route::get('/expedientes/{id}/editar', [ArrivalController::class, 'edit'])->name('expedientes.edit');
