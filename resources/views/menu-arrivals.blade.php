@@ -12,6 +12,9 @@
                 <a class="nav-link {{ request()->routeIs('arrivals.create') ? 'active' : '' }}" aria-current="{{ request()->routeIs('arrivals.create') ? 'page' : 'false' }}" href="{{ route('arrivals.create') }}">Nueva llegada</a>
             </li>
             <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('register-card-ocr.create') ? 'active' : '' }}" aria-current="{{ request()->routeIs('register-card-ocr.create') ? 'page' : 'false' }}" href="{{ route('register-card-ocr.create') }}">OCR prueba</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="#">Cerrar sesión</a>
             </li>
         </ul>

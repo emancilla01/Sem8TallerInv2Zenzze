@@ -1,10 +1,13 @@
 <?php
 
 use App\Http\Controllers\ArrivalController;
+use App\Http\Controllers\RegisterCardOcrController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ArrivalController::class, 'index'])->name('home');
 Route::get('/base-de-datos', [ArrivalController::class, 'database'])->name('database.index');
+Route::get('/pruebas/ocr-register-card', [RegisterCardOcrController::class, 'create'])->name('register-card-ocr.create');
+Route::post('/pruebas/ocr-register-card', [RegisterCardOcrController::class, 'store'])->name('register-card-ocr.store');
 
 Route::get('/llegadas/nueva', [ArrivalController::class, 'create'])->name('arrivals.create');
 Route::post('/llegadas', [ArrivalController::class, 'store'])->name('arrivals.store');
