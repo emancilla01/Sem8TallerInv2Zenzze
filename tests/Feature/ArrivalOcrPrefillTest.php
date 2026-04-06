@@ -43,11 +43,13 @@ class ArrivalOcrPrefillTest extends TestCase
         $response->assertSessionHas('_old_input.nombre', 'Gustavo');
         $response->assertSessionHas('_old_input.apellido', 'Velazquez');
         $response->assertSessionHas('_old_input.fecha_llegada', '2026-04-02');
+        $response->assertSessionHas('_old_input.ocr_document_original_name', 'register-card.pdf');
 
         $ocrDocument = session('arrivals.ocr_document');
 
         $this->assertIsArray($ocrDocument);
         $this->assertSame('register-card.pdf', $ocrDocument['original_name']);
+        $response->assertSessionHas('_old_input.ocr_document_temp', $ocrDocument['path']);
         $this->assertTrue(Storage::disk('local')->exists($ocrDocument['path']));
     }
 }

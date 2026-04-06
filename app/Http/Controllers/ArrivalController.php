@@ -327,6 +327,8 @@ class ArrivalController extends Controller
                     'nombre' => $formValues['nombre'],
                     'apellido' => $formValues['apellido'],
                     'fecha_llegada' => $formValues['fecha_llegada'],
+                    'ocr_document_temp' => $temporaryRegisterCard['path'],
+                    'ocr_document_original_name' => $temporaryRegisterCard['original_name'],
                 ]);
         } finally {
             if ($imagePath !== null && is_file($imagePath)) {
@@ -340,6 +342,8 @@ class ArrivalController extends Controller
                 'nombre' => $formValues['nombre'],
                 'apellido' => $formValues['apellido'],
                 'fecha_llegada' => $formValues['fecha_llegada'],
+                'ocr_document_temp' => $temporaryRegisterCard['path'],
+                'ocr_document_original_name' => $temporaryRegisterCard['original_name'],
             ]);
     }
 
@@ -360,9 +364,8 @@ class ArrivalController extends Controller
     public function store(Request $request)
     {
         $validated = $this->validateExpediente($request);
-        $currentOcrDocument = $this->currentOcrDocument();
-        $ocrDocumentTempPath = $validated['ocr_document_temp'] ?? $currentOcrDocument['path'] ?? null;
-        $ocrDocumentOriginalName = $validated['ocr_document_original_name'] ?? $currentOcrDocument['original_name'] ?? null;
+        $ocrDocumentTempPath = $validated['ocr_document_temp'] ?? null;
+        $ocrDocumentOriginalName = $validated['ocr_document_original_name'] ?? null;
 
         if (
             filled($ocrDocumentTempPath)
@@ -452,9 +455,9 @@ class ArrivalController extends Controller
 
         $redirectTo = $request->input('redirect_to');
 
-        if (is_string($redirectTo) && str_starts_with($redirectTo, config('app.url'))) {
+        if (($safeRedirectTo = $this->resolveInternalRedirect($request, $redirectTo)) !== null) {
             return redirect()
-                ->to($redirectTo)
+            ->to($safeRedirectTo)
                 ->with('success', 'Expediente eliminado correctamente');
         }
 
@@ -504,8 +507,8 @@ class ArrivalController extends Controller
     {
         return [
             'formValues' => $this->resolveCreateFormValues($formValues),
-            'ocrDocumentTemp' => $ocrDocumentTemp ?? $this->currentOcrDocument()['path'] ?? null,
-            'ocrDocumentOriginalName' => $ocrDocumentOriginalName ?? $this->currentOcrDocument()['original_name'] ?? null,
+            'ocrDocumentTemp' => $ocrDocumentTemp,
+            'ocrDocumentOriginalName' => $ocrDocumentOriginalName,
         ];
     }
 
@@ -731,6 +734,39 @@ class ArrivalController extends Controller
     private function forgetCurrentOcrDocument(): void
     {
         session()->forget(self::OCR_DOCUMENT_SESSION_KEY);
+    }
+
+    private function resolveInternalRedirect(Request $request, mixed $redirectTo): ?string
+    {
+        if (! is_string($redirectTo)) {
+            return null;
+        }
+
+        $redirectTo = trim($redirectTo);
+
+        if ($redirectTo === '') {
+            return null;
+        }
+
+        $parsedUrl = parse_url($redirectTo);
+
+        if ($parsedUrl === false) {
+            return null;
+        }
+
+        if (! isset($parsedUrl['scheme'], $parsedUrl['host'])) {
+            return str_starts_with($redirectTo, '/') ? $redirectTo : null;
+        }
+
+        if (! hash_equals($request->getHost(), (string) $parsedUrl['host'])) {
+            return null;
+        }
+
+        $path = $parsedUrl['path'] ?? '/';
+        $query = isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '';
+        $fragment = isset($parsedUrl['fragment']) ? '#' . $parsedUrl['fragment'] : '';
+
+        return $path . $query . $fragment;
     }
 
     /**
