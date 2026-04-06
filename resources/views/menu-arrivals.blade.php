@@ -9,7 +9,7 @@
                 <a class="nav-link {{ request()->routeIs('database.index') ? 'active' : '' }}" aria-current="{{ request()->routeIs('database.index') ? 'page' : 'false' }}" href="{{ route('database.index') }}">Base de datos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('arrivals.create') ? 'active' : '' }}" aria-current="{{ request()->routeIs('arrivals.create') ? 'page' : 'false' }}" href="{{ route('arrivals.create') }}">Nueva llegada</a>
+                <a class="nav-link {{ request()->routeIs('arrivals.create', 'arrivals.batch.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('arrivals.create', 'arrivals.batch.*') ? 'page' : 'false' }}" href="{{ route('arrivals.create') }}">Agregar registro</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#">Cerrar sesión</a>

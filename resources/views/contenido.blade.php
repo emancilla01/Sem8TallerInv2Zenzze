@@ -23,7 +23,7 @@
             <h1 class="h2 mb-1">Llegadas TEST2</h1>
             <p class="text-muted mb-0">Gestiona las llegadas actuales y los documentos</p>
         </div>
-        <a href="{{ route('arrivals.create') }}" class="btn btn-primary">Nueva llegada</a>
+        <a href="{{ route('arrivals.create') }}" class="btn btn-primary">Agregar registro</a>
     </div>
 
     <div class="card arrivals-card shadow-sm mb-4">

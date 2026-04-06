@@ -6,7 +6,6 @@ use App\Models\Expediente;
 use App\Services\PdfFirstPageImageConverter;
 use App\Services\RegisterCardTextParser;
 use App\Services\TesseractOcrService;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -17,6 +16,8 @@ class ArrivalController extends Controller
 {
     private const TEMPORARY_OCR_DIRECTORY = 'private/ocr-tests/register-cards';
     private const OCR_DOCUMENT_SESSION_KEY = 'arrivals.ocr_document';
+    private const TEMPORARY_BATCH_OCR_DIRECTORY = 'private/ocr-tests/register-cards/batch';
+    private const BATCH_ROWS_SESSION_KEY = 'arrivals.batch_rows';
 
     public function index(Request $request)
     {
@@ -92,6 +93,188 @@ class ArrivalController extends Controller
     public function create()
     {
         return view('arrivals.create', $this->createViewData());
+    }
+
+    public function batchCreate()
+    {
+        return view('arrivals.batch', $this->createBatchViewData());
+    }
+
+    public function processBatchOcr(
+        Request $request,
+        PdfFirstPageImageConverter $pdfFirstPageImageConverter,
+        TesseractOcrService $tesseractOcrService,
+        RegisterCardTextParser $registerCardTextParser,
+    ) {
+        $validated = $request->validate(
+            [
+                'register_card_pdfs' => ['required', 'array', 'min:1'],
+                'register_card_pdfs.*' => ['required', 'file', 'mimes:pdf'],
+            ],
+            [
+                'register_card_pdfs.required' => 'Debes seleccionar al menos un register card en PDF.',
+                'register_card_pdfs.array' => 'Los register cards deben enviarse como una lista válida.',
+                'register_card_pdfs.min' => 'Debes seleccionar al menos un register card en PDF.',
+                'register_card_pdfs.*.file' => 'Cada register card debe ser un archivo válido.',
+                'register_card_pdfs.*.mimes' => 'Cada register card debe estar en formato PDF.',
+            ]
+        );
+
+        $this->deleteBatchRows($this->currentBatchRows());
+        $rows = [];
+
+        foreach ((array) ($validated['register_card_pdfs'] ?? $request->file('register_card_pdfs', [])) as $uploadedRegisterCard) {
+            if (! $uploadedRegisterCard instanceof UploadedFile) {
+                continue;
+            }
+
+            $temporaryRegisterCard = $this->storeTemporaryBatchDocument($uploadedRegisterCard);
+            $imagePath = null;
+
+            $row = [
+                'id' => (string) Str::uuid(),
+                'temp_path' => $temporaryRegisterCard['path'],
+                'original_name' => $temporaryRegisterCard['original_name'],
+                'nombre' => '',
+                'apellido' => '',
+                'fecha_llegada' => '',
+                'error_message' => null,
+            ];
+
+            try {
+                $imagePath = $pdfFirstPageImageConverter->convert(Storage::disk('local')->path($temporaryRegisterCard['path']));
+                $rawOcrText = $tesseractOcrService->extractText($imagePath);
+                $parsedFields = $registerCardTextParser->parse($rawOcrText);
+
+                $row = array_merge($row, $this->resolveBatchRowValues($parsedFields));
+            } catch (Throwable $exception) {
+                $row['error_message'] = $exception->getMessage();
+            } finally {
+                if ($imagePath !== null && is_file($imagePath)) {
+                    @unlink($imagePath);
+                }
+            }
+
+            $rows[] = $this->normalizeBatchRow($row);
+        }
+
+        $this->rememberBatchRows($rows);
+
+        return redirect()
+            ->route('arrivals.batch.index')
+            ->with('success', count($rows) === 1 ? 'Se procesó 1 registro para revisión.' : 'Se procesaron ' . count($rows) . ' registros para revisión.');
+    }
+
+    public function batchEdit(string $rowId)
+    {
+        $row = $this->findCurrentBatchRow($rowId);
+
+        if ($row === null) {
+            return redirect()
+                ->route('arrivals.batch.index')
+                ->withErrors([
+                    'batch_actions' => 'El registro solicitado ya no está disponible para revisión.',
+                ]);
+        }
+
+        return view('arrivals.batch-edit', [
+            'row' => $row,
+            'formValues' => $this->resolveBatchRowValues($row),
+        ]);
+    }
+
+    public function batchUpdate(Request $request, string $rowId)
+    {
+        $rows = $this->currentBatchRows();
+        $rowIndex = $this->findBatchRowIndex($rows, $rowId);
+
+        if ($rowIndex === null) {
+            return redirect()
+                ->route('arrivals.batch.index')
+                ->withErrors([
+                    'batch_actions' => 'El registro solicitado ya no está disponible para revisión.',
+                ]);
+        }
+
+        $validated = $request->validate(
+            [
+                'nombre' => ['nullable', 'string', 'max:255'],
+                'apellido' => ['nullable', 'string', 'max:255'],
+                'fecha_llegada' => ['nullable', 'date'],
+            ],
+            [
+                'nombre.string' => 'El nombre del huésped debe ser un texto válido.',
+                'nombre.max' => 'El nombre del huésped no puede tener más de 255 caracteres.',
+                'apellido.string' => 'El apellido del huésped debe ser un texto válido.',
+                'apellido.max' => 'El apellido del huésped no puede tener más de 255 caracteres.',
+                'fecha_llegada.date' => 'La fecha de llegada debe ser una fecha válida.',
+            ]
+        );
+
+        $rows[$rowIndex] = $this->normalizeBatchRow(array_merge(
+            $rows[$rowIndex],
+            $this->resolveBatchRowValues($validated),
+            ['error_message' => null]
+        ));
+
+        $this->rememberBatchRows($rows);
+
+        return redirect()
+            ->route('arrivals.batch.index')
+            ->with('success', 'Registro actualizado para revisión.');
+    }
+
+    public function batchStoreSelected(Request $request)
+    {
+        $validated = $request->validate(
+            [
+                'selected_rows' => ['required', 'array', 'min:1'],
+                'selected_rows.*' => ['required', 'string'],
+            ],
+            [
+                'selected_rows.required' => 'Selecciona al menos un registro listo para guardar.',
+                'selected_rows.array' => 'La selección de registros no es válida.',
+                'selected_rows.min' => 'Selecciona al menos un registro listo para guardar.',
+            ]
+        );
+
+        $selectedRowIds = array_values(array_unique((array) $validated['selected_rows']));
+        $rows = $this->currentBatchRows();
+        $readySelectedCount = count(array_filter($rows, function (array $row) use ($selectedRowIds) {
+            return in_array($row['id'], $selectedRowIds, true) && $row['status'] === 'ready';
+        }));
+
+        if ($readySelectedCount === 0) {
+            return redirect()
+                ->route('arrivals.batch.index')
+                ->withErrors([
+                    'batch_actions' => 'Selecciona al menos un registro listo para guardar.',
+                ]);
+        }
+
+        $result = $this->persistBatchRows($rows, function (array $row) use ($selectedRowIds) {
+            return in_array($row['id'], $selectedRowIds, true);
+        });
+
+        return $this->redirectAfterBatchSave($result, 'seleccionados');
+    }
+
+    public function batchStoreValid()
+    {
+        $rows = $this->currentBatchRows();
+        $readyRowCount = count(array_filter($rows, fn (array $row) => $row['status'] === 'ready'));
+
+        if ($readyRowCount === 0) {
+            return redirect()
+                ->route('arrivals.batch.index')
+                ->withErrors([
+                    'batch_actions' => 'No hay registros listos para guardar.',
+                ]);
+        }
+
+        $result = $this->persistBatchRows($rows, fn (array $row) => $row['status'] === 'ready');
+
+        return $this->redirectAfterBatchSave($result, 'válidos');
     }
 
     public function prefillFromOcr(
@@ -326,12 +509,33 @@ class ArrivalController extends Controller
         ];
     }
 
+    private function createBatchViewData(): array
+    {
+        $batchRows = $this->currentBatchRows();
+
+        return [
+            'batchRows' => $batchRows,
+            'readyBatchRowCount' => count(array_filter($batchRows, fn (array $row) => $row['status'] === 'ready')),
+            'incompleteBatchRowCount' => count(array_filter($batchRows, fn (array $row) => $row['status'] === 'incomplete')),
+            'errorBatchRowCount' => count(array_filter($batchRows, fn (array $row) => $row['status'] === 'error')),
+        ];
+    }
+
     private function resolveCreateFormValues(array $values): array
     {
         return [
             'nombre' => trim((string) ($values['nombre'] ?? '')),
             'apellido' => trim((string) ($values['apellido'] ?? '')),
             'fecha_llegada' => $this->normalizeArrivalDate($values['fecha_llegada'] ?? null) ?? now()->format('Y-m-d'),
+        ];
+    }
+
+    private function resolveBatchRowValues(array $values): array
+    {
+        return [
+            'nombre' => trim((string) ($values['nombre'] ?? '')),
+            'apellido' => trim((string) ($values['apellido'] ?? '')),
+            'fecha_llegada' => $this->normalizeArrivalDate($values['fecha_llegada'] ?? null) ?? '',
         ];
     }
 
@@ -404,9 +608,19 @@ class ArrivalController extends Controller
 
     private function storeTemporaryOcrDocument(UploadedFile $uploadedDocument): array
     {
+        return $this->storeTemporaryUploadedDocument($uploadedDocument, self::TEMPORARY_OCR_DIRECTORY);
+    }
+
+    private function storeTemporaryBatchDocument(UploadedFile $uploadedDocument): array
+    {
+        return $this->storeTemporaryUploadedDocument($uploadedDocument, self::TEMPORARY_BATCH_OCR_DIRECTORY);
+    }
+
+    private function storeTemporaryUploadedDocument(UploadedFile $uploadedDocument, string $directory): array
+    {
         $originalName = $uploadedDocument->getClientOriginalName();
         $storedName = bin2hex(random_bytes(8)) . '-' . $this->sanitizeStoredFileName($originalName);
-        $storedPath = $uploadedDocument->storeAs(self::TEMPORARY_OCR_DIRECTORY, $storedName, 'local');
+        $storedPath = $uploadedDocument->storeAs($directory, $storedName, 'local');
 
         return [
             'path' => $storedPath,
@@ -442,8 +656,14 @@ class ArrivalController extends Controller
 
     private function temporaryOcrDocumentExists(string $temporaryPath): bool
     {
-        return str_starts_with($temporaryPath, self::TEMPORARY_OCR_DIRECTORY . '/')
+        return $this->isAllowedTemporaryOcrPath($temporaryPath)
             && Storage::disk('local')->exists($temporaryPath);
+    }
+
+    private function isAllowedTemporaryOcrPath(string $temporaryPath): bool
+    {
+        return str_starts_with($temporaryPath, self::TEMPORARY_OCR_DIRECTORY . '/')
+            || str_starts_with($temporaryPath, self::TEMPORARY_BATCH_OCR_DIRECTORY . '/');
     }
 
     private function nextAvailableDocumentPath(?string $originalName): string
@@ -511,5 +731,241 @@ class ArrivalController extends Controller
     private function forgetCurrentOcrDocument(): void
     {
         session()->forget(self::OCR_DOCUMENT_SESSION_KEY);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function currentBatchRows(): array
+    {
+        $rows = session(self::BATCH_ROWS_SESSION_KEY, []);
+
+        if (! is_array($rows) || $rows === []) {
+            return [];
+        }
+
+        $normalizedRows = [];
+
+        foreach ($rows as $row) {
+            if (! is_array($row) || ! isset($row['id'], $row['temp_path'], $row['original_name'])) {
+                continue;
+            }
+
+            $normalizedRows[] = $this->normalizeBatchRow($row);
+        }
+
+        if ($normalizedRows === []) {
+            $this->forgetBatchRows();
+
+            return [];
+        }
+
+        $this->rememberBatchRows($normalizedRows);
+
+        return $normalizedRows;
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    private function normalizeBatchRow(array $row): array
+    {
+        $normalizedRow = [
+            'id' => (string) ($row['id'] ?? Str::uuid()),
+            'temp_path' => (string) ($row['temp_path'] ?? ''),
+            'original_name' => trim((string) ($row['original_name'] ?? '')),
+            'nombre' => trim((string) ($row['nombre'] ?? '')),
+            'apellido' => trim((string) ($row['apellido'] ?? '')),
+            'fecha_llegada' => $this->normalizeArrivalDate($row['fecha_llegada'] ?? null) ?? '',
+            'error_message' => filled($row['error_message'] ?? null) ? trim((string) $row['error_message']) : null,
+        ];
+
+        if ($normalizedRow['original_name'] === '') {
+            $normalizedRow['original_name'] = basename($normalizedRow['temp_path']);
+        }
+
+        if (! $this->temporaryOcrDocumentExists($normalizedRow['temp_path'])) {
+            $normalizedRow['error_message'] = 'El archivo cargado ya no está disponible. Vuelve a procesarlo para poder guardarlo.';
+        }
+
+        $normalizedRow['status'] = $this->determineBatchRowStatus($normalizedRow);
+
+        return $normalizedRow;
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function determineBatchRowStatus(array $row): string
+    {
+        if (filled($row['error_message'] ?? null)) {
+            return 'error';
+        }
+
+        if (
+            trim((string) ($row['nombre'] ?? '')) === ''
+            || trim((string) ($row['apellido'] ?? '')) === ''
+            || trim((string) ($row['fecha_llegada'] ?? '')) === ''
+        ) {
+            return 'incomplete';
+        }
+
+        return 'ready';
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $rows
+     */
+    private function rememberBatchRows(array $rows): void
+    {
+        session([self::BATCH_ROWS_SESSION_KEY => array_values($rows)]);
+    }
+
+    private function forgetBatchRows(): void
+    {
+        session()->forget(self::BATCH_ROWS_SESSION_KEY);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $rows
+     */
+    private function deleteBatchRows(array $rows): void
+    {
+        foreach ($rows as $row) {
+            $temporaryPath = (string) ($row['temp_path'] ?? '');
+
+            if ($temporaryPath !== '') {
+                $this->deleteTemporaryOcrDocument($temporaryPath);
+            }
+        }
+
+        $this->forgetBatchRows();
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function findCurrentBatchRow(string $rowId): ?array
+    {
+        foreach ($this->currentBatchRows() as $row) {
+            if ($row['id'] === $rowId) {
+                return $row;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $rows
+     */
+    private function findBatchRowIndex(array $rows, string $rowId): ?int
+    {
+        foreach ($rows as $index => $row) {
+            if (($row['id'] ?? null) === $rowId) {
+                return $index;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $rows
+     * @param  callable(array<string, mixed>): bool  $shouldSave
+     * @return array{saved_count:int, skipped_count:int, remaining_rows:array<int, array<string, mixed>>}
+     */
+    private function persistBatchRows(array $rows, callable $shouldSave): array
+    {
+        $savedCount = 0;
+        $skippedCount = 0;
+        $remainingRows = [];
+
+        foreach ($rows as $row) {
+            if (! $shouldSave($row)) {
+                $remainingRows[] = $row;
+
+                continue;
+            }
+
+            if (($row['status'] ?? null) !== 'ready') {
+                $skippedCount++;
+                $remainingRows[] = $row;
+
+                continue;
+            }
+
+            if (! $this->temporaryOcrDocumentExists((string) ($row['temp_path'] ?? ''))) {
+                $skippedCount++;
+                $remainingRows[] = $this->normalizeBatchRow(array_merge($row, [
+                    'error_message' => 'El archivo cargado ya no está disponible. Vuelve a procesarlo para poder guardarlo.',
+                ]));
+
+                continue;
+            }
+
+            try {
+                $expediente = Expediente::create([
+                    'nombre' => $row['nombre'],
+                    'apellido' => $row['apellido'],
+                    'fecha_llegada' => $row['fecha_llegada'],
+                    'identificacion_path' => null,
+                ]);
+
+                $this->storeTemporaryOcrDocumentAsDocumento(
+                    $expediente,
+                    (string) $row['temp_path'],
+                    (string) ($row['original_name'] ?? null)
+                );
+
+                $savedCount++;
+            } catch (Throwable $exception) {
+                $skippedCount++;
+                $remainingRows[] = $this->normalizeBatchRow(array_merge($row, [
+                    'error_message' => $exception->getMessage(),
+                ]));
+            }
+        }
+
+        if ($remainingRows === []) {
+            $this->forgetBatchRows();
+        } else {
+            $this->rememberBatchRows($remainingRows);
+        }
+
+        return [
+            'saved_count' => $savedCount,
+            'skipped_count' => $skippedCount,
+            'remaining_rows' => $remainingRows,
+        ];
+    }
+
+    /**
+     * @param  array{saved_count:int, skipped_count:int, remaining_rows:array<int, array<string, mixed>>}  $result
+     */
+    private function redirectAfterBatchSave(array $result, string $scopeLabel)
+    {
+        if ($result['saved_count'] === 0) {
+            return redirect()
+                ->route('arrivals.batch.index')
+                ->withErrors([
+                    'batch_actions' => 'No se pudo guardar ningún registro ' . $scopeLabel . '.',
+                ]);
+        }
+
+        $message = $result['saved_count'] === 1
+            ? 'Se guardó 1 registro.'
+            : 'Se guardaron ' . $result['saved_count'] . ' registros.';
+
+        $redirect = redirect()
+            ->route('arrivals.batch.index')
+            ->with('success', $message);
+
+        if ($result['skipped_count'] > 0) {
+            return $redirect->with('warning', 'Algunos registros no se guardaron porque siguen incompletos o presentaron errores.');
+        }
+
+        return $redirect;
     }
 }

@@ -1,6 +1,6 @@
 @extends('plantillas.inicio')
 
-@section('title', 'Nueva llegada')
+@section('title', 'Agregar registro')
 
 @section('menu')
     @include('menu-arrivals')
@@ -14,14 +14,15 @@
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <h1 class="h2 mb-1">Nueva llegada</h1>
+            <h1 class="h2 mb-1">Agregar registro</h1>
             <p class="text-muted mb-0">Registra los datos operativos y los archivos del huésped.</p>
         </div>
+        <a href="{{ route('arrivals.batch.index') }}" class="btn btn-outline-secondary">Varios registros</a>
     </div>
 
     @if ($errors->any())
         <div class="alert alert-danger" role="alert">
-            <div class="fw-semibold mb-2">No se pudo registrar la llegada.</div>
+            <div class="fw-semibold mb-2">No se pudo guardar el registro.</div>
             <ul class="mb-0 ps-3">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -130,7 +131,7 @@
                         <span class="text-muted small">o haz clic para seleccionar</span>
                         <span class="arrivals-upload-filename text-muted small" data-upload-filename>Ningún archivo seleccionado</span>
                     </label>
-                    <div class="form-text">Opcional. Puedes subir uno o varios PDFs adicionales. El register card OCR también se guardará como documento cuando completes el alta.</div>
+                    <div class="form-text">Opcional. Puedes subir uno o varios PDFs adicionales. El register card OCR también se guardará como documento cuando completes el registro.</div>
                     @error('documento')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror

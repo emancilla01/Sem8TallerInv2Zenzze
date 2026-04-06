@@ -10,6 +10,12 @@ Route::get('/pruebas/ocr-register-card', [RegisterCardOcrController::class, 'cre
 Route::post('/pruebas/ocr-register-card', [RegisterCardOcrController::class, 'store'])->name('register-card-ocr.store');
 
 Route::get('/llegadas/nueva', [ArrivalController::class, 'create'])->name('arrivals.create');
+Route::get('/carga-masiva', [ArrivalController::class, 'batchCreate'])->name('arrivals.batch.index');
+Route::post('/carga-masiva/procesar', [ArrivalController::class, 'processBatchOcr'])->name('arrivals.batch.process');
+Route::post('/carga-masiva/guardar-seleccionados', [ArrivalController::class, 'batchStoreSelected'])->name('arrivals.batch.store-selected');
+Route::post('/carga-masiva/guardar-validos', [ArrivalController::class, 'batchStoreValid'])->name('arrivals.batch.store-valid');
+Route::get('/carga-masiva/{rowId}/revisar', [ArrivalController::class, 'batchEdit'])->name('arrivals.batch.edit');
+Route::put('/carga-masiva/{rowId}', [ArrivalController::class, 'batchUpdate'])->name('arrivals.batch.update');
 Route::post('/llegadas/nueva/ocr', [ArrivalController::class, 'prefillFromOcr'])->name('arrivals.prefill-ocr');
 Route::post('/llegadas', [ArrivalController::class, 'store'])->name('arrivals.store');
 Route::get('/expedientes/{id}', [ArrivalController::class, 'show'])->name('expedientes.show');
