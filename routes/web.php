@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ArrivalController;
 use App\Http\Controllers\RegisterCardOcrController;
+use App\Http\Controllers\ExpedienteFirmaController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ArrivalController::class, 'index'])->name('home');
@@ -22,6 +23,9 @@ Route::get('/expedientes/{id}', [ArrivalController::class, 'show'])->name('exped
 Route::get('/expedientes/{id}/editar', [ArrivalController::class, 'edit'])->name('expedientes.edit');
 Route::put('/expedientes/{id}', [ArrivalController::class, 'update'])->name('expedientes.update');
 Route::delete('/expedientes/{id}', [ArrivalController::class, 'destroy'])->name('expedientes.destroy');
+
+Route::get('/expedientes/{expediente}/firma', [ExpedienteFirmaController::class, 'show'])->name('expedientes.firma.show');
+Route::post('/expedientes/{expediente}/firma', [ExpedienteFirmaController::class, 'store'])->name('expedientes.firma.store');
 
 Route::redirect('/dashboard', '/')->name('dashboard');
 

@@ -23,6 +23,7 @@
         </div>
         <div class="d-flex flex-wrap gap-2">
             <a href="{{ route('expedientes.edit', $expediente->id) }}" class="btn btn-outline-secondary">Editar</a>
+            <a href="{{ route('expedientes.firma.show', $expediente->id) }}" class="btn btn-outline-primary">Firmar</a>
             <form action="{{ route('expedientes.destroy', $expediente->id) }}" method="post" onsubmit="return confirm('¿Estás seguro de eliminar este registro?')">
                 @csrf
                 @method('DELETE')
