@@ -11,6 +11,11 @@ class Documento extends Model
         'expediente_id',
         'path',
         'original_name',
+        'signed_at',
+    ];
+
+    protected $casts = [
+        'signed_at' => 'datetime',
     ];
 
     public function expediente(): BelongsTo

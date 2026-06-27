@@ -24,7 +24,6 @@ Route::get('/expedientes/{id}/editar', [ArrivalController::class, 'edit'])->name
 Route::put('/expedientes/{id}', [ArrivalController::class, 'update'])->name('expedientes.update');
 Route::delete('/expedientes/{id}', [ArrivalController::class, 'destroy'])->name('expedientes.destroy');
 
-Route::get('/expedientes/{expediente}/firma', [ExpedienteFirmaController::class, 'show'])->name('expedientes.firma.show');
 Route::post('/expedientes/{expediente}/firma', [ExpedienteFirmaController::class, 'store'])->name('expedientes.firma.store');
 
 Route::redirect('/dashboard', '/')->name('dashboard');

@@ -96,12 +96,16 @@
                                 <td>{{ $expediente->apellido }}</td>
                                 <td>{{ optional($expediente->fecha_llegada)->format('d/m/Y') }}</td>
                                 <td>
-                                    <span class="badge {{ $expediente->documentos_count > 0 ? 'text-bg-success' : 'text-bg-warning' }}">
-                                        {{ $expediente->documentos_count > 0 ? 'Subido' : 'Faltante' }}
-                                    </span>
+                                    @if ($expediente->signed_documentos_count > 0)
+                                        <span class="badge text-bg-success">Firmado</span>
+                                    @elseif ($expediente->documentos_count > 0)
+                                        <span class="badge text-bg-warning">Subido</span>
+                                    @else
+                                        <span class="badge text-bg-danger">Faltante</span>
+                                    @endif
                                 </td>
                                 <td>
-                                    <span class="badge {{ filled($expediente->identificacion_path) ? 'text-bg-success' : 'text-bg-warning' }}">
+                                    <span class="badge {{ filled($expediente->identificacion_path) ? 'text-bg-success' : 'text-bg-danger' }}">
                                         {{ filled($expediente->identificacion_path) ? 'Subido' : 'Faltante' }}
                                     </span>
                                 </td>
@@ -150,4 +154,5 @@
             </div>
         @endif
     </div>
+
 @endsection

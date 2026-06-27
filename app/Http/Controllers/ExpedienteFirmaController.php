@@ -5,17 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Expediente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class ExpedienteFirmaController extends Controller
 {
-    public function show(Expediente $expediente)
-    {
-        $documento = $expediente->documentos()->where('path', 'like', '%.pdf')->first() ?? $expediente->documentos()->first();
-
-        return view('expedientes.firma', compact('expediente', 'documento'));
-    }
-
     public function store(Request $request, Expediente $expediente)
     {
         $request->validate([
@@ -27,35 +19,28 @@ class ExpedienteFirmaController extends Controller
             $b64 = substr($b64, strpos($b64, ',') + 1);
         }
 
-        $data = base64_decode($b64);
-        if ($data === false) {
-            return back()->with('error', 'Firma inválida');
+        $sigData = base64_decode($b64);
+        if ($sigData === false) {
+            return response()->json(['error' => 'Firma inválida'], 422);
         }
 
-        $filename = 'firmas/' . now()->format('Ymd_His') . '_' . $expediente->id . '_' . Str::random(6) . '.png';
-        Storage::disk('public')->put($filename, $data);
+        $documento = $expediente->documentos()->where('path', 'like', '%.pdf')->first()
+            ?? $expediente->documentos()->first();
 
-        // Find first PDF documento
-        $documento = $expediente->documentos()->where('path', 'like', '%.pdf')->first() ?? $expediente->documentos()->first();
         if (! $documento) {
-            return back()->with('error', 'No hay documentos para firmar');
+            return response()->json(['error' => 'No hay documentos para firmar'], 422);
         }
 
-        $originalRel = $documento->path;
-        $originalFull = storage_path('app/public/' . $originalRel);
+        $originalFull = storage_path('app/public/' . $documento->path);
         if (! file_exists($originalFull)) {
-            return back()->with('error', 'Archivo original no encontrado: ' . $originalRel);
+            return response()->json(['error' => 'Archivo original no encontrado'], 422);
         }
 
-        $signedDir = 'documentos_firmados';
-        $signedRel = $signedDir . '/' . now()->format('Ymd_His') . '_' . $documento->id . '.pdf';
-        $signedFull = storage_path('app/public/' . $signedRel);
+        // Write signature PNG to a temp file for FPDI
+        $tmpSig = tempnam(sys_get_temp_dir(), 'firma_') . '.png';
+        file_put_contents($tmpSig, $sigData);
 
         try {
-            if (! class_exists(\setasign\Fpdi\Fpdi::class)) {
-                return back()->with('error', 'FPDI library not installed. Run: composer require setasign/fpdi setasign/fpdf');
-            }
-
             $pdf = new \setasign\Fpdi\Fpdi();
             $pageCount = $pdf->setSourceFile($originalFull);
 
@@ -67,25 +52,26 @@ class ExpedienteFirmaController extends Controller
                 $pdf->useTemplate($tpl);
 
                 if ($i === $pageCount) {
-                    $imgFull = storage_path('app/public/' . $filename);
-                    $imgWidthMm = 90;  // width of signature image in mm (≈70% of 45)
-                    $x = 70;           // mm from left
-                    $y = $size['height'] - 31; // moved up ~40%
-                    $pdf->Image($imgFull, $x, $y, $imgWidthMm);
+                    $imgWidthMm = 99;
+                    $x = 70;
+                    $y = $size['height'] - 25;
+                    $pdf->Image($tmpSig, $x, $y, $imgWidthMm);
                 }
             }
 
-            if (! file_exists(dirname($signedFull))) {
-                mkdir(dirname($signedFull), 0755, true);
-            }
+            // Overwrite the original PDF
+            $pdf->Output('F', $originalFull);
 
-            $pdf->Output('F', $signedFull);
+            $documento->signed_at = now();
+            $documento->save();
+
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al firmar PDF: ' . $e->getMessage());
+            @unlink($tmpSig);
+            return response()->json(['error' => 'Error al firmar PDF: ' . $e->getMessage()], 500);
         }
 
-        return redirect()->route('expedientes.firma.show', $expediente->id)
-            ->with('success', 'Firma guardada y PDF firmado.')
-            ->with('signed_path', $signedRel);
+        @unlink($tmpSig);
+
+        return response()->json(['success' => true]);
     }
 }

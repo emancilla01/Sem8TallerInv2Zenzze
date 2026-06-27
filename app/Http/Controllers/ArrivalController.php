@@ -36,6 +36,8 @@ class ArrivalController extends Controller
 
         $query = Expediente::query()
             ->withCount('documentos')
+            ->withCount(['documentos as signed_documentos_count' => fn ($q) => $q->whereNotNull('signed_at')])
+            ->with(['documentos' => fn ($q) => $q->where('path', 'like', '%.pdf')->limit(1)])
             ->whereDate('fecha_llegada', now()->toDateString())
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subquery) use ($search) {
@@ -72,6 +74,8 @@ class ArrivalController extends Controller
 
         $query = Expediente::query()
             ->withCount('documentos')
+            ->withCount(['documentos as signed_documentos_count' => fn ($q) => $q->whereNotNull('signed_at')])
+            ->with(['documentos' => fn ($q) => $q->where('path', 'like', '%.pdf')->limit(1)])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subquery) use ($search) {
                     $subquery

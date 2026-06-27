@@ -56,7 +56,7 @@
                 </div>
 
                 <div class="col-12 d-flex justify-content-end">
-                    <button type="submit" class="btn btn-primary">Procesar registros</button>
+                    <button type="submit" class="btn btn-primary" id="btn-procesar-registros">Procesar registros</button>
                 </div>
             </form>
         </div>
@@ -159,11 +159,37 @@
                     </div>
 
                     <div class="d-flex flex-column flex-md-row justify-content-end gap-2 pt-4">
-                        <button type="submit" class="btn btn-outline-secondary">Guardar seleccionados</button>
-                        <button type="submit" class="btn btn-primary" formaction="{{ route('arrivals.batch.store-valid') }}">Guardar todos los válidos</button>
+                        <button type="submit" class="btn btn-outline-secondary" id="btn-guardar-seleccionados">Guardar seleccionados</button>
+                        <button type="submit" class="btn btn-primary" id="btn-guardar-validos" formaction="{{ route('arrivals.batch.store-valid') }}">Guardar todos los válidos</button>
                     </div>
                 </form>
             @endif
         </div>
     </div>
 @endsection
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Upload form spinner
+    const uploadForm = document.querySelector('form[action="{{ route('arrivals.batch.process') }}"]');
+    const btnProcesar = document.getElementById('btn-procesar-registros');
+    if (uploadForm && btnProcesar) {
+        uploadForm.addEventListener('submit', () => {
+            btnProcesar.disabled = true;
+            btnProcesar.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Procesando...';
+        });
+    }
+
+    // Save buttons spinner
+    const saveForm = document.querySelector('form[action="{{ route('arrivals.batch.store-selected') }}"]');
+    if (saveForm) {
+        saveForm.addEventListener('submit', (e) => {
+            const clicked = document.activeElement;
+            if (clicked && (clicked.id === 'btn-guardar-seleccionados' || clicked.id === 'btn-guardar-validos')) {
+                clicked.disabled = true;
+                clicked.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Guardando...';
+            }
+        });
+    }
+});
+</script>

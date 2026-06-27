@@ -63,7 +63,7 @@
                         <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                     <div class="d-flex justify-content-end pt-3">
-                        <button type="submit" class="btn btn-outline-secondary" formaction="{{ route('arrivals.prefill-ocr') }}" formnovalidate>
+                        <button type="submit" class="btn btn-success" id="btn-continuar-ocr" formaction="{{ route('arrivals.prefill-ocr') }}" formnovalidate>
                             Continuar
                         </button>
                     </div>
@@ -167,4 +167,18 @@
             </form>
         </div>
     </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btn-continuar-ocr');
+    if (btn) {
+        btn.addEventListener('click', () => {
+            btn.disabled = true;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-primary');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Procesando...';
+        });
+    }
+});
+</script>
 @endsection
