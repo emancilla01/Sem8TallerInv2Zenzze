@@ -21,8 +21,8 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <!-- contains latest updates from 1.2 -->
-            {{-- will test signature capture and document upload features here, as well as any other arrival-related functionalities we add 
-            in the future for 1.3.  --}}
+            {{-- final version of the prototype created for Taller Investigacion 2, worked on signature capture and document 
+            upload features for this version  --}}
             {{-- zennze2 and testing has the text parsing testing that didnt work.  --}}
             <h1 class="h2 mb-1">Llegadas TEST2</h1>
             <p class="text-muted mb-0">Gestiona las llegadas actuales y los documentos</p>
